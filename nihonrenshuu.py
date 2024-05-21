@@ -3,17 +3,16 @@ import time
 import pandas as pd
 import multiprocessing
 
-# Load data
-hiragana = pd.read_csv('nihonrenshuu/hiragana.csv')
-katakana = pd.read_csv('nihonrenshuu/katakana.csv')
+hiragana = pd.read_csv('data/hiragana.csv')
+katakana = pd.read_csv('data/katakana.csv')
 english_vocab = pd.concat([
-    pd.read_csv('nihonrenshuu/hiragana_vocab.csv'),
-    pd.read_csv('nihonrenshuu/katakana_vocab.csv')
+    pd.read_csv('data/hiragana_vocab.csv'),
+    pd.read_csv('data/katakana_vocab.csv')
 ], ignore_index=True)
 
 vietnamese_vocab = pd.concat([
-    pd.read_csv('nihonrenshuu/hiragana_vocab_vn.csv'),
-    pd.read_csv('nihonrenshuu/katakana_vocab_vn.csv')
+    pd.read_csv('data/hiragana_vocab_vn.csv'),
+    pd.read_csv('data/katakana_vocab_vn.csv')
 ], ignore_index=True)
 
 def choose_settings():
@@ -21,9 +20,7 @@ def choose_settings():
     char_type = input("Choose character type for the test: \n1. Hiragana\n2. Katakana\nYour choice: ").strip().lower()
     vocab_language = input("Choose meaning language: \n1. English (en)\n2. Vietnamese (vi)\nYour choice: ").strip().lower()
 
-    # Mapping choices to character types
     char_type = 'hiragana' if char_type in ['1', 'hiragana'] else 'katakana'
-    # Mapping choices to vocabulary languages
     vocab_language = 'english' if vocab_language in ['1', 'en', 'english'] else 'vietnamese'
 
 def generate_questions():
