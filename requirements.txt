@@ -1,0 +1,2 @@
+pandas=2.2.1=py311ha02d727_0
+pynput=1.7.6=py311h38be061_3
