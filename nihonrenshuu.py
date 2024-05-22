@@ -2,25 +2,21 @@ from pynput.keyboard import Key, Listener
 import time
 import pandas as pd
 import multiprocessing
+import threading
 
-hiragana = pd.read_csv('data/hiragana.csv')
-katakana = pd.read_csv('data/katakana.csv')
-english_vocab = pd.concat([
-    pd.read_csv('data/hiragana_vocab.csv'),
-    pd.read_csv('data/katakana_vocab.csv')
-], ignore_index=True)
-
-vietnamese_vocab = pd.concat([
-    pd.read_csv('data/hiragana_vocab_vn.csv'),
-    pd.read_csv('data/katakana_vocab_vn.csv')
-], ignore_index=True)
+hiragana = pd.read_csv('data/normal/hiragana.csv')
+katakana = pd.read_csv('data/normal/katakana.csv')
+english_vocab = pd.read_csv('data/normal/vocab_en.csv')
+vietnamese_vocab = pd.read_csv('data/normal/vocab_vi.csv')
 
 def choose_settings():
     global char_type, vocab_language
     char_type = input("Choose character type for the test: \n1. Hiragana\n2. Katakana\nYour choice: ").strip().lower()
     vocab_language = input("Choose meaning language: \n1. English (en)\n2. Vietnamese (vi)\nYour choice: ").strip().lower()
 
+    # Mapping choices to character types
     char_type = 'hiragana' if char_type in ['1', 'hiragana'] else 'katakana'
+    # Mapping choices to vocabulary languages
     vocab_language = 'english' if vocab_language in ['1', 'en', 'english'] else 'vietnamese'
 
 def generate_questions():
@@ -50,11 +46,6 @@ def display_answers(answers):
         vocab_index = idx + 5  # Offset by 5 for vocab index
         print(f"{idx:<2}. {char:<12} {vocab_index:<2}. {vocab}")
 
-def ask_to_continue():
-    continue_test = input("Do you want to continue? (y/N): ").replace(" ", "")
-    if continue_test.lower() == 'y':
-        start_test()
-
 def on_press(key):
     global test_running, listener, all_questions, all_answers, test_started, test_process
     if key == Key.space and test_running:
@@ -64,31 +55,37 @@ def on_press(key):
             test_process = multiprocessing.Process(target=timer_end_test)
             test_process.start()
         else:
-            end_test()
+            end_test(test_process)
 
 def timer_end_test():
     time.sleep(60)
-    end_test()
+    end_test(None)
 
-def end_test():
-    global test_running, test_started, test_process
+def end_test(process):
+    global test_running, test_started
     if test_running:
         test_running = False
         test_started = False
         print("\nTime limit exceeded or test manually ended.")
         display_answers(all_answers)
-        test_process.terminate()
+        if process:
+            process.terminate()
         listener.stop()
-        ask_to_continue()
+
+def ask_to_continue():
+    continue_test = input("Do you want to continue? (y/N): ").replace(" ", "")
+    if continue_test.lower() == 'y':
+        start_test()
 
 def start_test():
-    global test_running, listener, all_questions, all_answers, test_started, test_process
+    global test_running, listener, all_questions, all_answers, test_started
     all_questions, all_answers = generate_questions()
     test_running = True
     test_started = False
     print("Press Space to start the test.")
     with Listener(on_press=on_press) as listener:
         listener.join()
+    ask_to_continue()
 
 if __name__ == '__main__':
     choose_settings()
